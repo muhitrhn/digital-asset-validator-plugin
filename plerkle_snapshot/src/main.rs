@@ -14,7 +14,7 @@ pub mod plugin;
 async fn main() {
     match run().await {
         Ok(_) => {
-            println!("Done")
+            println!("Done!")
         }
         Err(e) => {
             println!("Error: {}", e);
@@ -24,8 +24,8 @@ async fn main() {
 
 async fn run() -> Result<(), error::SnappError> {
     let c = config::extract_config()?;
-    app_tracing::enable_tracing(c);
-    let resp = reqwest::blocking::get("https:://api.mainnet-beta.solana.com/snapshot.tar.bz2")
+    app_tracing::enable_tracing(c.clone());
+    let resp = reqwest::blocking::get(c.snapshot_url.to_string())
     .map_err(|p| {
         error::SnappError::SnapshotDownloadError {
             msg: p.to_string(),
@@ -34,7 +34,7 @@ async fn run() -> Result<(), error::SnappError> {
     let mut loader = ArchiveSnapshotExtractor::from_reader(resp)?;
     info!("Streaming snapshot from HTTP");
     let plugin = unsafe {
-        load_plugin(&"/media/austbot/development1/digital-asset-validator-plugin/target/release/libplerkle.so")
+        load_plugin(&c.plugin_config_path.to_string())
         .map_err(|p| {
             error::SnappError::PluginLoadError {
                 msg: "Failed to load plugin".to_string(),
@@ -51,6 +51,5 @@ async fn run() -> Result<(), error::SnappError> {
         dumper.on_append_vec(av).unwrap();
     }
     drop(dumper);
-    println!("Done!");
     Ok(())
 }

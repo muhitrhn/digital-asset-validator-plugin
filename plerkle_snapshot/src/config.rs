@@ -6,11 +6,11 @@ use tracing::Level;
 use crate::error::SnappError;
 use serde::{Deserialize};
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Default, Clone, Debug, Deserialize)]
 pub struct Config {
     pub snapshot_url: String,
     pub snapshot_storage_path: String,
-    pub plugin_path: String,
+    pub plugin_config_path: String,
     #[serde(skip)]
     pub level: Option<Level>,
 }
